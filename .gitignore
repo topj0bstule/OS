@@ -25,3 +25,6 @@
 !*.php
 !*.html
 !*.css
+
+
+!*.txt
