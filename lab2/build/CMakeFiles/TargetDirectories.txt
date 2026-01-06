@@ -1,0 +1,3 @@
+C:/CPlusPlus_Projects/studying/os/lab2/build/CMakeFiles/lab2.dir
+C:/CPlusPlus_Projects/studying/os/lab2/build/CMakeFiles/ALL_BUILD.dir
+C:/CPlusPlus_Projects/studying/os/lab2/build/CMakeFiles/ZERO_CHECK.dir
