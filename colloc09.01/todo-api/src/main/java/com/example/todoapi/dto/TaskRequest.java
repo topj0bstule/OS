@@ -7,14 +7,14 @@ import jakarta.validation.constraints.Size;
 
 public class TaskRequest {
     
-    @NotBlank(message = "Title is mandatory")
-    @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
+    //@NotBlank(message = "Title is mandatory")
+    //@Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
     
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    //@Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
     
-    @NotNull(message = "Status is mandatory")
+    //@NotNull(message = "Status is mandatory")
     private Task.TaskStatus status;
     
     // Конструкторы

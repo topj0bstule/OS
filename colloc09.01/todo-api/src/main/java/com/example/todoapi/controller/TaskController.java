@@ -13,21 +13,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 @CrossOrigin(origins = "*")
 public class TaskController {
     
     @Autowired
     private TaskService taskService;
     
-    // GET /tasks - получить все задачи
+    // GET /api/tasks - получить все задачи
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks() {
         List<Task> tasks = taskService.getAllTasks();
         return ResponseEntity.ok(tasks);
     }
     
-    // GET /tasks/{id} - получить задачу по ID (ИСПРАВЛЕНО)
+    // GET /api/tasks/{id} - получить задачу по ID (ИСПРАВЛЕНО)
     @GetMapping("/{id}")
     public ResponseEntity<?> getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id)
@@ -36,14 +36,14 @@ public class TaskController {
                         .body(createErrorResponse("Task not found with id: " + id)));
     }
     
-    // POST /tasks - создать задачу
+    // POST /api/tasks - создать задачу
     @PostMapping
     public ResponseEntity<Task> createTask(@Valid @RequestBody TaskRequest taskRequest) {
         Task task = taskService.createTask(taskRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
     
-    // PUT /tasks/{id} - полностью обновить задачу
+    // PUT /api/tasks/{id} - полностью обновить задачу
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTask(@PathVariable Long id, 
                                          @Valid @RequestBody TaskRequest taskRequest) {
@@ -56,7 +56,7 @@ public class TaskController {
         }
     }
     
-    // PATCH /tasks/{id} - частично обновить задачу
+    // PATCH /api/tasks/{id} - частично обновить задачу
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateTaskPartial(@PathVariable Long id,
                                                 @RequestBody TaskRequest taskRequest) {
@@ -69,7 +69,7 @@ public class TaskController {
         }
     }
     
-    // DELETE /tasks/{id} - удалить задачу
+    // DELETE /api/tasks/{id} - удалить задачу
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTask(@PathVariable Long id) {
         try {
@@ -81,14 +81,13 @@ public class TaskController {
         }
     }
     
-    // GET /tasks/status/{status} - получить задачи по статусу
+    // GET /api/tasks/status/{status} - получить задачи по статусу
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Task>> getTasksByStatus(@PathVariable Task.TaskStatus status) {
         List<Task> tasks = taskService.getTasksByStatus(status);
         return ResponseEntity.ok(tasks);
     }
     
-    // Вспомогательные методы для ответов
     private Map<String, Object> createErrorResponse(String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);

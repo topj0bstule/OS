@@ -121,6 +121,11 @@
             font-weight: 500;
         }
 
+        .form-group label.required::after {
+            content: ' *';
+            color: #f5576c;
+        }
+
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -139,9 +144,29 @@
             border-color: #667eea;
         }
 
+        .form-group input.input-error,
+        .form-group textarea.input-error,
+        .form-group select.input-error {
+            border-color: #f5576c !important;
+            box-shadow: 0 0 0 2px rgba(245, 87, 108, 0.1);
+        }
+
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
+        }
+
+        /* Сообщения об ошибках в формах */
+        .error-message {
+            color: #f5576c;
+            font-size: 0.85em;
+            margin-top: 5px;
+            min-height: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
         }
 
         /* Область задач */
@@ -382,8 +407,9 @@
                 </button>
 
                 <div class="form-group">
-                    <label for="taskId">ID задачи:</label>
+                    <label for="taskId" class="required">ID задачи:</label>
                     <input type="number" id="taskId" placeholder="Введите ID">
+                    <div class="error-message" id="taskIdError"></div>
                 </div>
 
                 <button class="btn" onclick="getTaskById()">
@@ -431,25 +457,28 @@
                     <input type="hidden" id="modalTaskId">
                     
                     <div class="form-group">
-                        <label for="modalTitleInput">Заголовок *</label>
-                        <input type="text" id="modalTitleInput" required 
-                               placeholder="Введите заголовок задачи">
+                        <label for="modalTitleInput" class="required">Заголовок</label>
+                        <input type="text" id="modalTitleInput" 
+                               placeholder="Введите заголовок задачи (минимум 3 символа)">
+                        <div class="error-message" id="modalTitleError"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="modalDescription">Описание</label>
                         <textarea id="modalDescription" 
-                                  placeholder="Введите описание задачи"></textarea>
+                                  placeholder="Введите описание задачи (максимум 500 символов)"></textarea>
+                        <div class="error-message" id="modalDescriptionError"></div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="modalStatus">Статус *</label>
-                        <select id="modalStatus" required>
+                        <label for="modalStatus" class="required">Статус</label>
+                        <select id="modalStatus">
                             <option value="">Выберите статус</option>
                             <option value="TODO">TODO</option>
                             <option value="IN_PROGRESS">IN_PROGRESS</option>
                             <option value="DONE">DONE</option>
                         </select>
+                        <div class="error-message" id="modalStatusError"></div>
                     </div>
                     
                     <button type="submit" class="btn btn-success" id="modalSubmitBtn">
@@ -461,13 +490,13 @@
 
         <footer>
             <p>Spring Boot REST API + H2 Database | CRUD операции с задачами</p>
-            <p>API доступен по адресу: <code>http://localhost:8080/api/tasks</code></p>
+            <p>API доступен по адресу: <code>http://localhost:8080/tasks</code></p>
         </footer>
     </div>
 
     <script>
         // Конфигурация API
-        const API_BASE_URL = 'http://localhost:8080/api/tasks';
+        const API_BASE_URL = '/api/tasks'; 
         let currentTasks = [];
 
         // DOM элементы
@@ -506,9 +535,14 @@
 
         // Получить задачу по ID
         async function getTaskById() {
+            clearFieldErrors();
+            
             const id = document.getElementById('taskId').value;
+            
+            // Проверка ID
             if (!id) {
-                showError('Введите ID задачи');
+                showFieldError('taskIdError', 'Введите ID задачи');
+                document.getElementById('taskId').classList.add('input-error');
                 return;
             }
 
@@ -608,9 +642,14 @@
 
         // Удалить задачу
         async function deleteTaskById() {
+            clearFieldErrors();
+            
             const id = document.getElementById('taskId').value;
+            
+            // Проверка ID
             if (!id) {
-                showError('Введите ID задачи для удаления');
+                showFieldError('taskIdError', 'Введите ID задачи для удаления');
+                document.getElementById('taskId').classList.add('input-error');
                 return;
             }
 
@@ -714,6 +753,7 @@
 
         // Открыть модальное окно для создания
         function openCreateModal() {
+            clearModalErrors();
             modalTitle.textContent = 'Создание новой задачи';
             modalTaskId.value = '';
             modalTitleInput.value = '';
@@ -726,6 +766,7 @@
         // Открыть модальное окно для редактирования
         async function openEditModal(id) {
             try {
+                clearModalErrors();
                 const response = await fetch(`${API_BASE_URL}/${id}`);
                 if (!response.ok) throw new Error('Задача не найдена');
                 
@@ -746,9 +787,12 @@
 
         // Открыть модальное окно для обновления
         function openUpdateModal() {
+            clearFieldErrors();
+            
             const id = document.getElementById('taskId').value;
             if (!id) {
-                showError('Введите ID задачи для обновления');
+                showFieldError('taskIdError', 'Введите ID задачи для обновления');
+                document.getElementById('taskId').classList.add('input-error');
                 return;
             }
             openEditModal(id);
@@ -757,16 +801,59 @@
         // Закрыть модальное окно
         function closeModal() {
             taskModal.style.display = 'none';
+            clearModalErrors();
         }
 
         // Обработка формы
         async function handleFormSubmit(event) {
             event.preventDefault();
             
+            clearModalErrors();
+            
+            const title = modalTitleInput.value.trim();
+            const description = modalDescription.value.trim();
+            const status = modalStatus.value;
+            
+            let hasErrors = false;
+            
+            // Валидация заголовка
+            if (!title) {
+                showFieldError('modalTitleError', 'Введите заголовок задачи');
+                modalTitleInput.classList.add('input-error');
+                hasErrors = true;
+            } else if (title.length < 3) {
+                showFieldError('modalTitleError', 'Заголовок должен содержать минимум 3 символа');
+                modalTitleInput.classList.add('input-error');
+                hasErrors = true;
+            } else if (title.length > 100) {
+                showFieldError('modalTitleError', 'Заголовок не должен превышать 100 символов');
+                modalTitleInput.classList.add('input-error');
+                hasErrors = true;
+            }
+            
+            // Валидация статуса
+            if (!status) {
+                showFieldError('modalStatusError', 'Выберите статус задачи');
+                modalStatus.classList.add('input-error');
+                hasErrors = true;
+            }
+            
+            // Валидация описания
+            if (description.length > 500) {
+                showFieldError('modalDescriptionError', 'Описание не должно превышать 500 символов');
+                modalDescription.classList.add('input-error');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                showError('Исправьте ошибки в форме');
+                return;
+            }
+            
             const taskData = {
-                title: modalTitleInput.value,
-                description: modalDescription.value,
-                status: modalStatus.value
+                title: title,
+                description: description,
+                status: status
             };
 
             const id = modalTaskId.value;
@@ -828,9 +915,46 @@
             setTimeout(hideMessage, 5000);
         }
 
+        // Показать ошибку под конкретным полем
+        function showFieldError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
         // Скрыть сообщение
         function hideMessage() {
             statusMessageElement.style.display = 'none';
+        }
+
+        // Очистить ошибки полей в основной панели
+        function clearFieldErrors() {
+            const errorElements = document.querySelectorAll('#control-panel .error-message');
+            const inputElements = document.querySelectorAll('#control-panel .input-error');
+            
+            errorElements.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+            
+            inputElements.forEach(el => {
+                el.classList.remove('input-error');
+            });
+        }
+
+        // Очистить ошибки в модальном окне
+        function clearModalErrors() {
+            const errorElements = document.querySelectorAll('#taskModal .error-message');
+            const inputElements = document.querySelectorAll('#taskModal .input-error');
+            
+            errorElements.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+            
+            inputElements.forEach(el => {
+                el.classList.remove('input-error');
+            });
         }
 
         // Форматировать статус
