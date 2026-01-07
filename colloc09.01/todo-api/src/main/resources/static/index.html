@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Панель управления */
+        .control-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 1.3em;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        /* Формы */
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Область задач */
+        .tasks-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .task-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .task-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border-left: 5px solid;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .task-card:hover {
+            transform: translateX(5px);
+        }
+
+        .task-card.TODO {
+            border-left-color: #f6d365;
+        }
+
+        .task-card.IN_PROGRESS {
+            border-left-color: #4facfe;
+        }
+
+        .task-card.DONE {
+            border-left-color: #00f2fe;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .task-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-TODO {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        .status-IN_PROGRESS {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .status-DONE {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #495057 !important;
+        }
+
+        .task-description {
+            color: #6c757d;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #adb5bd;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .task-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: opacity 0.3s;
+        }
+
+        .task-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .btn-edit {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #f5576c;
+            color: white;
+        }
+
+        /* Статус сообщений */
+        .status-message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #212529;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close-modal:hover {
+            color: #212529;
+        }
+
+        /* Загрузка */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 To-Do List Manager</h1>
+            <div class="subtitle">Управление задачами через REST API</div>
+        </header>
+
+        <div class="main-content">
+            <!-- Левая панель: Управление -->
+            <div class="control-panel">
+                <h2 class="section-title">🎮 Управление</h2>
+                
+                <button class="btn" onclick="loadAllTasks()">
+                    🔄 Загрузить все задачи
+                </button>
+                
+                <button class="btn btn-success" onclick="openCreateModal()">
+                    ➕ Создать новую задачу
+                </button>
+
+                <div class="form-group">
+                    <label for="taskId">ID задачи:</label>
+                    <input type="number" id="taskId" placeholder="Введите ID">
+                </div>
+
+                <button class="btn" onclick="getTaskById()">
+                    🔍 Получить задачу по ID
+                </button>
+
+                <button class="btn btn-warning" onclick="openUpdateModal()">
+                    ✏️ Обновить задачу
+                </button>
+
+                <button class="btn btn-danger" onclick="deleteTaskById()">
+                    🗑️ Удалить задачу
+                </button>
+
+                <div class="form-group">
+                    <label for="statusFilter">Фильтр по статусу:</label>
+                    <select id="statusFilter" onchange="filterByStatus()">
+                        <option value="">Все статусы</option>
+                        <option value="TODO">TODO</option>
+                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                        <option value="DONE">DONE</option>
+                    </select>
+                </div>
+
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <!-- Правая панель: Список задач -->
+            <div class="tasks-panel">
+                <h2 class="section-title">📋 Список задач</h2>
+                <div id="taskList" class="task-list">
+                    <div class="loading">Загрузка задач</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно для создания/редактирования -->
+        <div id="taskModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Создание задачи</h2>
+                    <button class="close-modal" onclick="closeModal()">×</button>
+                </div>
+                <form id="taskForm" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="modalTaskId">
+                    
+                    <div class="form-group">
+                        <label for="modalTitleInput">Заголовок *</label>
+                        <input type="text" id="modalTitleInput" required 
+                               placeholder="Введите заголовок задачи">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modalDescription">Описание</label>
+                        <textarea id="modalDescription" 
+                                  placeholder="Введите описание задачи"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modalStatus">Статус *</label>
+                        <select id="modalStatus" required>
+                            <option value="">Выберите статус</option>
+                            <option value="TODO">TODO</option>
+                            <option value="IN_PROGRESS">IN_PROGRESS</option>
+                            <option value="DONE">DONE</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" id="modalSubmitBtn">
+                        Сохранить
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <footer>
+            <p>Spring Boot REST API + H2 Database | CRUD операции с задачами</p>
+            <p>API доступен по адресу: <code>http://localhost:8080/api/tasks</code></p>
+        </footer>
+    </div>
+
+    <script>
+        // Конфигурация API
+        const API_BASE_URL = 'http://localhost:8080/api/tasks';
+        let currentTasks = [];
+
+        // DOM элементы
+        const taskListElement = document.getElementById('taskList');
+        const statusMessageElement = document.getElementById('statusMessage');
+        const taskModal = document.getElementById('taskModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTaskId = document.getElementById('modalTaskId');
+        const modalTitleInput = document.getElementById('modalTitleInput');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalStatus = document.getElementById('modalStatus');
+        const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllTasks();
+        });
+
+        // ==================== API ФУНКЦИИ ====================
+
+        // Загрузить все задачи
+        async function loadAllTasks() {
+            showLoading();
+            try {
+                const response = await fetch(API_BASE_URL);
+                if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
+                
+                currentTasks = await response.json();
+                renderTasks(currentTasks);
+                showSuccess('Задачи успешно загружены!');
+            } catch (error) {
+                showError(`Ошибка загрузки: ${error.message}`);
+                console.error('Ошибка:', error);
+            }
+        }
+
+        // Получить задачу по ID
+        async function getTaskById() {
+            const id = document.getElementById('taskId').value;
+            if (!id) {
+                showError('Введите ID задачи');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Задача не найдена');
+                    }
+                    throw new Error(`HTTP ошибка: ${response.status}`);
+                }
+                
+                const task = await response.json();
+                renderTasks([task]);
+                showSuccess(`Задача #${id} загружена`);
+            } catch (error) {
+                showError(error.message);
+                console.error('Ошибка:', error);
+            }
+        }
+
+        // Создать задачу
+        async function createTask(taskData) {
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Ошибка создания');
+                }
+
+                const createdTask = await response.json();
+                showSuccess('Задача успешно создана!');
+                loadAllTasks();
+                return createdTask;
+            } catch (error) {
+                showError(`Ошибка создания: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Обновить задачу
+        async function updateTask(id, taskData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Ошибка обновления');
+                }
+
+                const updatedTask = await response.json();
+                showSuccess('Задача успешно обновлена!');
+                loadAllTasks();
+                return updatedTask;
+            } catch (error) {
+                showError(`Ошибка обновления: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Частичное обновление (PATCH)
+        async function updateTaskPartial(id, taskData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) throw new Error('Ошибка обновления');
+                
+                const updatedTask = await response.json();
+                showSuccess('Задача обновлена (частично)');
+                loadAllTasks();
+                return updatedTask;
+            } catch (error) {
+                showError(`Ошибка: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Удалить задачу
+        async function deleteTaskById() {
+            const id = document.getElementById('taskId').value;
+            if (!id) {
+                showError('Введите ID задачи для удаления');
+                return;
+            }
+
+            if (!confirm(`Удалить задачу #${id}?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Задача не найдена');
+                    }
+                    throw new Error('Ошибка удаления');
+                }
+
+                showSuccess('Задача успешно удалена!');
+                loadAllTasks();
+                document.getElementById('taskId').value = '';
+            } catch (error) {
+                showError(`Ошибка удаления: ${error.message}`);
+            }
+        }
+
+        // Фильтрация по статусу
+        async function filterByStatus() {
+            const status = document.getElementById('statusFilter').value;
+            
+            if (!status) {
+                loadAllTasks();
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/status/${status}`);
+                if (!response.ok) throw new Error('Ошибка фильтрации');
+                
+                const tasks = await response.json();
+                renderTasks(tasks);
+                showSuccess(`Задачи со статусом: ${status}`);
+            } catch (error) {
+                showError(`Ошибка: ${error.message}`);
+            }
+        }
+
+        // ==================== РЕНДЕРИНГ ====================
+
+        // Отобразить задачи
+        function renderTasks(tasks) {
+            if (!tasks || tasks.length === 0) {
+                taskListElement.innerHTML = '<div class="task-card">Задачи не найдены</div>';
+                return;
+            }
+
+            taskListElement.innerHTML = tasks.map(task => `
+                <div class="task-card ${task.status}">
+                    <div class="task-header">
+                        <div class="task-title">${task.title}</div>
+                        <span class="task-status status-${task.status}">
+                            ${formatStatus(task.status)}
+                        </span>
+                    </div>
+                    
+                    ${task.description ? `
+                        <div class="task-description">${task.description}</div>
+                    ` : ''}
+                    
+                    <div class="task-meta">
+                        <div>ID: ${task.id}</div>
+                        <div>Создано: ${formatDate(task.createdAt)}</div>
+                        <div>Обновлено: ${formatDate(task.updatedAt)}</div>
+                    </div>
+                    
+                    <div class="task-actions">
+                        <button class="btn-edit" onclick="openEditModal(${task.id})">
+                            Редактировать
+                        </button>
+                        <button class="btn-delete" onclick="deleteTask(${task.id})">
+                            Удалить
+                        </button>
+                        <select onchange="updateTaskStatus(${task.id}, this.value)">
+                            <option value="">Изменить статус</option>
+                            <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
+                            <option value="IN_PROGRESS" ${task.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
+                            <option value="DONE" ${task.status === 'DONE' ? 'selected' : ''}>DONE</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Показать загрузку
+        function showLoading() {
+            taskListElement.innerHTML = '<div class="loading">Загрузка</div>';
+            hideMessage();
+        }
+
+        // ==================== МОДАЛЬНЫЕ ОКНА ====================
+
+        // Открыть модальное окно для создания
+        function openCreateModal() {
+            modalTitle.textContent = 'Создание новой задачи';
+            modalTaskId.value = '';
+            modalTitleInput.value = '';
+            modalDescription.value = '';
+            modalStatus.value = '';
+            modalSubmitBtn.textContent = 'Создать';
+            taskModal.style.display = 'flex';
+        }
+
+        // Открыть модальное окно для редактирования
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`);
+                if (!response.ok) throw new Error('Задача не найдена');
+                
+                const task = await response.json();
+                
+                modalTitle.textContent = 'Редактирование задачи';
+                modalTaskId.value = task.id;
+                modalTitleInput.value = task.title;
+                modalDescription.value = task.description || '';
+                modalStatus.value = task.status;
+                modalSubmitBtn.textContent = 'Обновить';
+                taskModal.style.display = 'flex';
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Открыть модальное окно для обновления
+        function openUpdateModal() {
+            const id = document.getElementById('taskId').value;
+            if (!id) {
+                showError('Введите ID задачи для обновления');
+                return;
+            }
+            openEditModal(id);
+        }
+
+        // Закрыть модальное окно
+        function closeModal() {
+            taskModal.style.display = 'none';
+        }
+
+        // Обработка формы
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const taskData = {
+                title: modalTitleInput.value,
+                description: modalDescription.value,
+                status: modalStatus.value
+            };
+
+            const id = modalTaskId.value;
+
+            try {
+                if (id) {
+                    await updateTask(id, taskData);
+                } else {
+                    await createTask(taskData);
+                }
+                closeModal();
+            } catch (error) {
+                // Ошибка уже обработана в функциях API
+            }
+        }
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+
+        // Удалить задачу (из списка)
+        async function deleteTask(id) {
+            if (!confirm(`Удалить задачу #${id}?`)) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Ошибка удаления');
+                
+                showSuccess('Задача удалена');
+                loadAllTasks();
+            } catch (error) {
+                showError(`Ошибка удаления: ${error.message}`);
+            }
+        }
+
+        // Обновить статус задачи
+        async function updateTaskStatus(id, status) {
+            if (!status) return;
+            
+            try {
+                await updateTaskPartial(id, { status });
+            } catch (error) {
+                showError(`Ошибка обновления статуса: ${error.message}`);
+            }
+        }
+
+        // Показать сообщение об успехе
+        function showSuccess(message) {
+            statusMessageElement.textContent = message;
+            statusMessageElement.className = 'status-message success';
+            setTimeout(hideMessage, 3000);
+        }
+
+        // Показать сообщение об ошибке
+        function showError(message) {
+            statusMessageElement.textContent = message;
+            statusMessageElement.className = 'status-message error';
+            setTimeout(hideMessage, 5000);
+        }
+
+        // Скрыть сообщение
+        function hideMessage() {
+            statusMessageElement.style.display = 'none';
+        }
+
+        // Форматировать статус
+        function formatStatus(status) {
+            const statusMap = {
+                'TODO': 'К выполнению',
+                'IN_PROGRESS': 'В процессе',
+                'DONE': 'Выполнено'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Форматировать дату
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.addEventListener('click', (event) => {
+            if (event.target === taskModal) {
+                closeModal();
+            }
+        });
+
+        // Обработка клавиши ESC
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
