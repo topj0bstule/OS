@@ -4,37 +4,50 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
+@XmlRootElement(name = "task")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Task {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlElement
     private Long id;
     
     @NotBlank(message = "Title is mandatory")
     @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     @Column(nullable = false)
+    @XmlElement
     private String title;
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @XmlElement
     private String description;
     
     @NotNull(message = "Status is mandatory")
     @Enumerated(EnumType.STRING)
+    @XmlElement
     private TaskStatus status;
     
     @Column(name = "created_at", updatable = false)
+    @XmlElement
+    @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
     private LocalDateTime createdAt;
     
     @Column(name = "updated_at")
+    @XmlElement
+    @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
     private LocalDateTime updatedAt;
     
-    // Enum для статусов
     public enum TaskStatus {
-        TODO, IN_PROGRESS, DONE
+        TODO,
+        IN_PROGRESS,
+        DONE
     }
     
     // Конструкторы
