@@ -26,5 +26,6 @@
 !*.html
 !*.css
 
-
+!*.xml
 !*.txt
+!*.pdf
