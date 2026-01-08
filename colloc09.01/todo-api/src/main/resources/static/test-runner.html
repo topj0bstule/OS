@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование приложения - To-Do API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f46b45 0%, #eea849 100%);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .test-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-passed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-running {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .test-output {
+            font-family: 'Courier New', monospace;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .test-line {
+            margin: 5px 0;
+            padding-left: 10px;
+            border-left: 3px solid transparent;
+        }
+
+        .test-line.passed {
+            border-left-color: #48bb78;
+            color: #9ae6b4;
+        }
+
+        .test-line.failed {
+            border-left-color: #f56565;
+            color: #fed7d7;
+        }
+
+        .test-line.info {
+            border-left-color: #4299e1;
+            color: #bee3f8;
+        }
+
+        .test-line.warning {
+            border-left-color: #ed8936;
+            color: #feebc8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 5px solid;
+        }
+
+        .summary-card.total {
+            border-top-color: #4facfe;
+        }
+
+        .summary-card.passed {
+            border-top-color: #56ab2f;
+        }
+
+        .summary-card.failed {
+            border-top-color: #f46b45;
+        }
+
+        .summary-card.skipped {
+            border-top-color: #a0aec0;
+        }
+
+        .summary-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .summary-label {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 Тестирование приложения</h1>
+            <div class="subtitle">Запуск и просмотр результатов unit-тестов</div>
+        </header>
+
+        <div class="main-content">
+            <div class="test-controls">
+                <button class="btn btn-success" onclick="runTests()">
+                    ▶️ Запустить все тесты
+                </button>
+                <button class="btn btn-danger" onclick="clearResults()">
+                    🗑️ Очистить результаты
+                </button>
+                <a href="/" class="btn btn-info">
+                    🏠 На главную
+                </a>
+            </div>
+
+            <div class="test-summary" id="testSummary" style="display: none;">
+                <div class="summary-card total">
+                    <div class="summary-label">Всего тестов</div>
+                    <div class="summary-number" id="totalTests">0</div>
+                </div>
+                <div class="summary-card passed">
+                    <div class="summary-label">Пройдено</div>
+                    <div class="summary-number" id="passedTests">0</div>
+                </div>
+                <div class="summary-card failed">
+                    <div class="summary-label">Провалено</div>
+                    <div class="summary-number" id="failedTests">0</div>
+                </div>
+                <div class="summary-card skipped">
+                    <div class="summary-label">Пропущено</div>
+                    <div class="summary-number" id="skippedTests">0</div>
+                </div>
+            </div>
+
+            <div class="test-results">
+                <div class="test-header">
+                    <h2>Результаты тестирования</h2>
+                    <div class="test-status status-running" id="globalStatus">
+                        Ожидание запуска...
+                    </div>
+                </div>
+                
+                <div id="testOutput" class="test-output">
+                    <div class="loading">Нажмите "Запустить все тесты" для начала</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>To-Do List API | Spring Boot + JUnit 5 тестирование</p>
+            <a href="/" class="back-link">← Вернуться к управлению задачами</a>
+        </footer>
+    </div>
+
+    <script>
+        async function runTests() {
+            const outputElement = document.getElementById('testOutput');
+            const statusElement = document.getElementById('globalStatus');
+            const summaryElement = document.getElementById('testSummary');
+            
+            // Показываем загрузку
+            outputElement.innerHTML = '<div class="loading">Запуск тестов</div>';
+            statusElement.textContent = 'Тесты выполняются...';
+            statusElement.className = 'test-status status-running';
+            summaryElement.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/tests/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                // Обновляем статус
+                if (result.success) {
+                    statusElement.textContent = '✅ Все тесты пройдены';
+                    statusElement.className = 'test-status status-passed';
+                } else {
+                    statusElement.textContent = '❌ Есть проваленные тесты';
+                    statusElement.className = 'test-status status-failed';
+                }
+                
+                // Отображаем результаты
+                displayTestResults(result.output);
+                
+                // Парсим статистику из вывода Maven
+                parseTestStatistics(result.output);
+                
+            } catch (error) {
+                outputElement.innerHTML = `
+                    <div class="test-line failed">
+                        ❌ Ошибка при запуске тестов: ${error.message}
+                    </div>
+                `;
+                statusElement.textContent = '❌ Ошибка запуска';
+                statusElement.className = 'test-status status-failed';
+            }
+        }
+        
+        function displayTestResults(output) {
+            const outputElement = document.getElementById('testOutput');
+            
+            if (!output || output.length === 0) {
+                outputElement.innerHTML = '<div class="test-line warning">Нет результатов тестов</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            output.forEach(line => {
+                let cssClass = 'info';
+                
+                if (line.includes('[ERROR]') || line.includes('FAILURE') || line.includes('✗')) {
+                    cssClass = 'failed';
+                } else if (line.includes('[INFO]') || line.includes('✓') || line.includes('PASSED')) {
+                    cssClass = 'passed';
+                } else if (line.includes('[WARNING]')) {
+                    cssClass = 'warning';
+                }
+                
+                // Убираем лишние пробелы для лучшего отображения
+                const cleanLine = line.trim();
+                if (cleanLine) {
+                    html += `<div class="test-line ${cssClass}">${escapeHtml(cleanLine)}</div>`;
+                }
+            });
+            
+            outputElement.innerHTML = html || '<div class="test-line warning">Пустой вывод тестов</div>';
+        }
+        
+        function parseTestStatistics(output) {
+            let total = 0;
+            let passed = 0;
+            let failed = 0;
+            let skipped = 0;
+            
+            output.forEach(line => {
+                // Парсим стандартный вывод Maven Surefire
+                if (line.includes('Tests run:')) {
+                    const match = line.match(/Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+),\s*Skipped:\s*(\d+)/);
+                    if (match) {
+                        total = parseInt(match[1]);
+                        failed = parseInt(match[2]) + parseInt(match[3]);
+                        skipped = parseInt(match[4]);
+                        passed = total - failed - skipped;
+                    }
+                }
+            });
+            
+            // Если не нашли в Maven формате, ищем в JUnit формате
+            if (total === 0) {
+                output.forEach(line => {
+                    if (line.includes('tests completed')) {
+                        const match = line.match(/(\d+)\s+tests\s+completed/);
+                        if (match) total = parseInt(match[1]);
+                    }
+                    if (line.includes('tests passed')) {
+                        const match = line.match(/(\d+)\s+tests\s+passed/);
+                        if (match) passed = parseInt(match[1]);
+                    }
+                    if (line.includes('tests failed')) {
+                        const match = line.match(/(\d+)\s+tests\s+failed/);
+                        if (match) failed = parseInt(match[1]);
+                    }
+                });
+            }
+            
+            // Обновляем UI
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('skippedTests').textContent = skipped;
+            document.getElementById('testSummary').style.display = 'grid';
+        }
+        
+        function clearResults() {
+            document.getElementById('testOutput').innerHTML = 
+                '<div class="loading">Нажмите "Запустить все тесты" для начала</div>';
+            document.getElementById('globalStatus').textContent = 'Ожидание запуска...';
+            document.getElementById('globalStatus').className = 'test-status status-running';
+            document.getElementById('testSummary').style.display = 'none';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Автоматический скроллинг к новым сообщениям
+        function scrollToBottom() {
+            const outputElement = document.getElementById('testOutput');
+            outputElement.scrollTop = outputElement.scrollHeight;
+        }
+        
+        // Обновляем скроллинг при изменении содержимого
+        const observer = new MutationObserver(scrollToBottom);
+        observer.observe(document.getElementById('testOutput'), {
+            childList: true,
+            subtree: true
+        });
+    </script>
+</body>
+</html>

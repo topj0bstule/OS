@@ -33,11 +33,6 @@ public class DataInitializer implements CommandLineRunner {
                 "Реализовать валидацию через XSD схему", 
                 Task.TaskStatus.DONE
             ));
-            
-            System.out.println("Created sample tasks in file database");
         }
-        
-        System.out.println("H2 Database: ./data/tododb.mv.db");
-        System.out.println("H2 Console: http://localhost:8080/h2-console");
     }
 }
