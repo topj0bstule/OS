@@ -1,31 +1,190 @@
-# Игнорировать всё
-*
+# ================================
+# Maven (основное для вашего проекта)
+# ================================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-# Разрешить .gitignore
-!.gitignore
+# ================================
+# Gradle (на всякий случай)
+# ================================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+out/
 
-# Разрешить вход в папки
-!*/
+# ================================
+# IDE файлы
+# ================================
+## IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
 
-# Разрешить исходные файлы
-!*.cpp
-!*.c
-!*.h
-!*.hpp
-!*.py
-!*.java
-!*.js
-!*.ts
-!*.cs
-!*.go
-!*.rb
-!*.swift
-!*.kt
-!*.rs
-!*.php
-!*.html
-!*.css
+## Eclipse
+.classpath
+.project
+.settings/
+bin/
+.metadata/
 
-!*.xml
-!*.txt
-!*.pdf
+## NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+## VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# ================================
+# Системные файлы
+# ================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+desktop.ini
+
+# ================================
+# Логи и временные файлы
+# ================================
+*.log
+*.log.*
+logs/
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ================================
+# Бинарные файлы
+# ================================
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ================================
+# Тестовые отчеты
+# ================================
+**/target/surefire-reports/
+**/target/failsafe-reports/
+**/target/site/
+**/target/jacoco/
+**/target/jacoco.exec
+*.jpi
+
+# ================================
+# Приложения и контейнеры
+# ================================
+docker-compose.yml
+Dockerfile
+!docker-compose*.yml
+!Dockerfile*
+
+# ================================
+# Spring Boot специфичное
+# ================================
+application-local.properties
+application-dev.properties
+application-staging.properties
+!application.properties
+!application-test.properties  # Тестовые проперти часто хранят в репо
+
+# ================================
+# Специфично для вашего проекта
+# ================================
+## Исключаем все, кроме исходных файлов схемы
+**/*.xsd
+!src/main/resources/task-schema.xsd  # Исключение - нужная XSD схема
+
+# ================================
+# Операционные системы
+# ================================
+## Windows
+[Tt]humbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Linux/Unix
+*~
+
+## macOS
+__MACOSX/
+
+# ================================
+# Базы данных и временные файлы
+# ================================
+*.db
+*.sql
+*.h2.db
+*.mv.db
+
+# ================================
+# Node.js/npm (если используется фронтенд)
+# ================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ================================
+# Файлы окружения и секреты
+# ================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+*.pem
+*.key
+*.crt
+*.p12
+keystore.jks
+
+# ================================
+# Документация
+# ================================
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# ================================
+# Исключения для важных файлов
+# ================================
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/resources/**
+!**/src/test/resources/**
